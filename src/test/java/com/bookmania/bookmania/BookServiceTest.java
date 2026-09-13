@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.List;
 import java.util.Optional;
@@ -111,17 +112,47 @@ class BookServiceTest {
     }
 
     @Test
-    void update_existing_updatesFieldsButKeepsAvailableCopiesUntouched() {
+    void update_totalCopiesUnchanged_leavesAvailableCopiesAlone() {
         book.setAvailableCopies(1); // one currently on loan
         when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
         when(categoryRepository.findAllById(Set.of(2L))).thenReturn(List.of(category));
         when(bookRepository.save(any(Book.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        request.setTitle("Clean Code (2nd ed.)");
+        request.setTitle("Clean Code (2nd ed.)"); // totalCopies stays 3, same as book's
         BookResponse result = bookService.update(1L, request);
 
         assertThat(result.getTitle()).isEqualTo("Clean Code (2nd ed.)");
         assertThat(result.getAvailableCopies()).isEqualTo(1);
+    }
+
+    @Test
+    void update_totalCopiesIncreased_shiftsAvailableCopiesByTheSameDelta() {
+        // book: 3 total, 1 available (2 on loan) -> restocked to 5 total
+        book.setAvailableCopies(1);
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+        when(categoryRepository.findAllById(Set.of(2L))).thenReturn(List.of(category));
+        when(bookRepository.save(any(Book.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        request.setTotalCopies(5);
+        BookResponse result = bookService.update(1L, request);
+
+        // +2 total copies -> the 2 new copies are immediately available, not stuck at 1
+        assertThat(result.getAvailableCopies()).isEqualTo(3);
+        assertThat(result.getTotalCopies()).isEqualTo(5);
+    }
+
+    @Test
+    void update_totalCopiesDecreasedBelowOnLoanCount_flooredAtZeroInsteadOfNegative() {
+        // book: 3 total, 1 available (2 on loan) -> shrunk to 1 total
+        book.setAvailableCopies(1);
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+        when(categoryRepository.findAllById(Set.of(2L))).thenReturn(List.of(category));
+        when(bookRepository.save(any(Book.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        request.setTotalCopies(1);
+        BookResponse result = bookService.update(1L, request);
+
+        assertThat(result.getAvailableCopies()).isZero();
     }
 
     @Test
@@ -139,6 +170,7 @@ class BookServiceTest {
         bookService.delete(1L);
 
         verify(bookRepository).deleteById(1L);
+        verify(bookRepository).flush();
     }
 
     @Test
@@ -148,5 +180,19 @@ class BookServiceTest {
         assertThatThrownBy(() -> bookService.delete(1L))
                 .isInstanceOf(ResourceNotFoundException.class);
         verify(bookRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void delete_bookWithLoanOrReservationHistory_throwsBusinessExceptionInsteadOfRaw500() {
+        // A book with any Loan/Reservation row still pointing at it (even
+        // returned/cancelled ones - there's no cascade) fails its FK
+        // constraint on delete; that used to surface as an uncaught
+        // DataIntegrityViolationException -> generic 500.
+        when(bookRepository.existsById(1L)).thenReturn(true);
+        doThrow(new DataIntegrityViolationException("FK violation")).when(bookRepository).flush();
+
+        assertThatThrownBy(() -> bookService.delete(1L))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("préstamos, reservas o multas");
     }
 }

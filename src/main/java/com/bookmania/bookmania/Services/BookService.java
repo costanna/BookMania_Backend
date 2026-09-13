@@ -9,6 +9,7 @@ import com.bookmania.bookmania.Exception.ResourceNotFoundException;
 import com.bookmania.bookmania.Repository.BookRepository;
 import com.bookmania.bookmania.Repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -85,6 +86,14 @@ public class BookService {
             throw new ResourceNotFoundException("No se encontraron categorías válidas");
         }
 
+        // totalCopies can change here, but availableCopies is never touched
+        // by anything else in this method - without shifting it by the same
+        // delta, raising totalCopies (restocking) silently left the new
+        // copies unavailable to loan, and lowering it could leave
+        // availableCopies sitting above the new totalCopies entirely.
+        int delta = request.getTotalCopies() - book.getTotalCopies();
+        book.setAvailableCopies(Math.max(0, book.getAvailableCopies() + delta));
+
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
         book.setIsbn(request.getIsbn());
@@ -101,7 +110,18 @@ public class BookService {
         if (!bookRepository.existsById(id)) {
             throw new ResourceNotFoundException("Libro no encontrado");
         }
-        bookRepository.deleteById(id);
+        try {
+            // flush() forces the DELETE (and any FK check) to run right here
+            // instead of being deferred to end-of-transaction, where it would
+            // surface as an uncaught DataIntegrityViolationException nowhere
+            // near this try/catch and fall through to a generic 500.
+            bookRepository.deleteById(id);
+            bookRepository.flush();
+        } catch (DataIntegrityViolationException e) {
+            throw new BusinessException(
+                    "No se puede eliminar el libro: tiene préstamos, reservas o multas asociadas"
+            );
+        }
     }
 
     private BookResponse toResponse(Book book) {
