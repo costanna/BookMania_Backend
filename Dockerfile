@@ -13,7 +13,12 @@ RUN mvn -B -q -DskipTests package
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 
+# Don't run the app as root inside the container - a compromised process
+# gains nothing beyond this unprivileged user's own file access.
+RUN groupadd -r spring && useradd -r -g spring spring
 COPY --from=build /app/target/*.jar app.jar
+RUN chown spring:spring app.jar
+USER spring
 
 # Railway sets PORT at runtime; application.properties reads it via ${PORT:8080}.
 EXPOSE 8080
