@@ -13,10 +13,10 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.kushagraBhaskar</groupId>
-    <artifactId>Library-Management-System</artifactId>
+    <groupId>com.bookmania</groupId>
+    <artifactId>bookmania-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>Library-Management-System</name>
+    <name>BookMania Backend</name>
 
     <properties>
         <java.version>21</java.version>
@@ -97,13 +97,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
-        </dependency>
-
-        <!-- ModelMapper (conversión Entity <-> DTO) -->
-        <dependency>
-            <groupId>org.modelmapper</groupId>
-            <artifactId>modelmapper</artifactId>
-            <version>3.2.0</version>
         </dependency>
 
     </dependencies>
