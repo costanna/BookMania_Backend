@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -30,14 +29,9 @@ public class BookService {
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
 
-    public List<BookResponse> getAll() {
-        return bookRepository.findAll().stream()
-                .map(this::toResponse)
-                .toList();
-    }
-
-    public Page<BookResponse> getFiltered(String title, String author, Long categoryId,
-            int page, int size) {
+    // `title` matches against title *or* author - there is no separate author
+    // filter; the catalog's single search box covers both.
+    public Page<BookResponse> getFiltered(String title, Long categoryId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("title").ascending());
         return bookRepository.findWithFilters(title, categoryId, pageable)
                 .map(this::toResponse);
