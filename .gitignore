@@ -42,3 +42,5 @@ build/
 application-local.properties
 
 .env
+# Railway IaC SDK (installed in .railway/ only to evaluate railway.ts)
+.railway/node_modules/
