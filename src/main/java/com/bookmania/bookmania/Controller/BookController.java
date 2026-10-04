@@ -21,11 +21,10 @@ public class BookController {
     @GetMapping
     public ResponseEntity<Page<BookResponse>> getAll(
             @RequestParam(required = false) String title,
-            @RequestParam(required = false) String author,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "25") int size) {
-        return ResponseEntity.ok(bookService.getFiltered(title, author, categoryId, page, size));
+        return ResponseEntity.ok(bookService.getFiltered(title, categoryId, page, size));
     }
 
     @GetMapping("/{id}")
