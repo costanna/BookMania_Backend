@@ -154,7 +154,8 @@ The API will be available at `http://localhost:8080`
 
 ## Deploying to Railway
 
-The backend ships with a `Dockerfile` and `railway.json`, so Railway builds and runs it as a
+The backend ships with a `Dockerfile` and `.railway/railway.ts` (Railway Infrastructure as
+Code, applied with `railway config apply` - not on git push), so Railway builds and runs it as a
 container — no extra buildpack configuration needed.
 
 1. Push this repo to GitHub and create a new Railway project from it (or run `railway up` from
@@ -174,7 +175,7 @@ container — no extra buildpack configuration needed.
    them from the autocomplete when adding a new variable.) Railway sets `PORT` automatically;
    the app already listens on it via `server.port=${PORT:8080}`.
 4. Deploy. Railway builds the `Dockerfile` and polls `/actuator/health` (configured in
-   `railway.json`) to know when the container is ready.
+   `.railway/railway.ts`) to know when the container is ready.
 5. Once it's up, update the frontend's `VITE_API_URL` to the Railway backend URL.
 
 ---
@@ -385,7 +386,8 @@ La API estará disponible en `http://localhost:8080`
 
 ## Despliegue en Railway
 
-El backend incluye un `Dockerfile` y un `railway.json`, así que Railway lo construye y ejecuta
+El backend incluye un `Dockerfile` y un `.railway/railway.ts` (Infrastructure as Code de
+Railway, se aplica con `railway config apply`, no al hacer push), así que Railway lo construye y ejecuta
 como contenedor sin configuración adicional de buildpack.
 
 1. Sube este repo a GitHub y crea un proyecto nuevo en Railway a partir de él (o usa
@@ -405,7 +407,7 @@ como contenedor sin configuración adicional de buildpack.
    aparecen en el autocompletado al crear una variable nueva.) Railway define `PORT`
    automáticamente; la app ya escucha en ese puerto vía `server.port=${PORT:8080}`.
 4. Despliega. Railway construye el `Dockerfile` y consulta `/actuator/health` (configurado en
-   `railway.json`) para saber cuándo el contenedor está listo.
+   `.railway/railway.ts`) para saber cuándo el contenedor está listo.
 5. Una vez arriba, actualiza `VITE_API_URL` en el frontend con la URL del backend en Railway.
 
 ---
