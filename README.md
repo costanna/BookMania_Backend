@@ -126,7 +126,7 @@ src/main/java/com/bookmania/bookmania/
 1. Clone the repository
 
 ```bash
-git clone https://github.com/annahico/BookMania_Backend.git
+git clone https://github.com/costanna/BookMania_Backend.git
 cd BookMania_Backend
 ```
 
@@ -168,7 +168,7 @@ container — no extra buildpack configuration needed.
    | `SPRING_DATASOURCE_USERNAME` | `${{Postgres.PGUSER}}` |
    | `SPRING_DATASOURCE_PASSWORD` | `${{Postgres.PGPASSWORD}}` |
    | `JWT_SECRET_KEY` | a fresh, private Base64 secret (e.g. `openssl rand -base64 48`) — **do not reuse the dev default in `application.properties`** |
-   | `CORS_ALLOWED_ORIGINS` | your deployed frontend URL, e.g. `https://bookmania-frontend.up.railway.app` |
+   | `CORS_ALLOWED_ORIGINS` | your deployed frontend URL, e.g. `https://bookmania.up.railway.app` |
 
    (`${{Postgres.PGHOST}}` etc. are Railway variable references to the Postgres plugin — pick
    them from the autocomplete when adding a new variable.) Railway sets `PORT` automatically;
@@ -183,11 +183,11 @@ container — no extra buildpack configuration needed.
 
 The React frontend is fully integrated with this backend.
 
-**Repository:** https://github.com/annahico/BookMania_Frontend
+**Repository:** https://github.com/costanna/BookMania_Frontend
 
 ### Setup
 ```bash
-git clone https://github.com/annahico/BookMania_Frontend.git
+git clone https://github.com/costanna/BookMania_Frontend.git
 cd BookMania_Frontend
 npm install
 echo "VITE_API_URL=http://localhost:8080" > .env
@@ -224,7 +224,7 @@ axiosInstance.interceptors.request.use((config) => {
 
 **Anna Costa**
 [LinkedIn](https://www.linkedin.com/in/annahico/)
-[GitHub](https://github.com/annahico)
+[GitHub](https://github.com/costanna)
 
 ---
 ---
@@ -357,7 +357,7 @@ src/main/java/com/bookmania/bookmania/
 1. Clona el repositorio
 
 ```bash
-git clone https://github.com/annahico/BookMania_Backend.git
+git clone https://github.com/costanna/BookMania_Backend.git
 cd BookMania_Backend
 ```
 
@@ -399,7 +399,7 @@ como contenedor sin configuración adicional de buildpack.
    | `SPRING_DATASOURCE_USERNAME` | `${{Postgres.PGUSER}}` |
    | `SPRING_DATASOURCE_PASSWORD` | `${{Postgres.PGPASSWORD}}` |
    | `JWT_SECRET_KEY` | un secreto Base64 nuevo y privado (p. ej. `openssl rand -base64 48`) — **no reutilices el valor por defecto de desarrollo de `application.properties`** |
-   | `CORS_ALLOWED_ORIGINS` | la URL del frontend desplegado, p. ej. `https://bookmania-frontend.up.railway.app` |
+   | `CORS_ALLOWED_ORIGINS` | la URL del frontend desplegado, p. ej. `https://bookmania.up.railway.app` |
 
    (`${{Postgres.PGHOST}}`, etc. son referencias a variables del plugin de Postgres —
    aparecen en el autocompletado al crear una variable nueva.) Railway define `PORT`
@@ -414,11 +414,11 @@ como contenedor sin configuración adicional de buildpack.
 
 El frontend en React está completamente integrado con este backend.
 
-**Repositorio:** https://github.com/annahico/BookMania_Frontend
+**Repositorio:** https://github.com/costanna/BookMania_Frontend
 
 ### Instalación
 ```bash
-git clone https://github.com/annahico/BookMania_Frontend.git
+git clone https://github.com/costanna/BookMania_Frontend.git
 cd BookMania_Frontend
 npm install
 echo "VITE_API_URL=http://localhost:8080" > .env
@@ -455,4 +455,4 @@ axiosInstance.interceptors.request.use((config) => {
 
 **Anna Costa**
 [LinkedIn](https://www.linkedin.com/in/annahico/)
-[GitHub](https://github.com/annahico)
+[GitHub](https://github.com/costanna)
