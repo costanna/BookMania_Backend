@@ -10,6 +10,7 @@ import com.bookmania.bookmania.Exception.BusinessException;
 import com.bookmania.bookmania.Exception.ResourceNotFoundException;
 import com.bookmania.bookmania.Repository.UserRepository;
 import com.bookmania.bookmania.Security.CurrentUserService;
+import com.bookmania.bookmania.Security.DemoAccounts;
 import com.bookmania.bookmania.Security.JwtUtil;
 import com.bookmania.bookmania.Services.AuthService;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,6 +48,8 @@ class AuthServiceTest {
     private UserDetails userDetails;
     @Mock
     private CurrentUserService currentUserService;
+    @Mock
+    private DemoAccounts demoAccounts;
 
     @InjectMocks
     private AuthService authService;
@@ -142,6 +145,22 @@ class AuthServiceTest {
         authService.changePassword(request);
 
         verify(userRepository).save(argThat(u -> u.getPassword().equals("newHashed")));
+    }
+
+    @Test
+    void changePassword_demoAccount_throwsBusinessExceptionWithoutSaving() {
+        ChangePasswordRequest request = new ChangePasswordRequest();
+        request.setCurrentPassword("demo1234");
+        request.setNewPassword("hijacked");
+
+        when(currentUserService.getCurrentUser()).thenReturn(user);
+        when(demoAccounts.isDemo("anna@test.com")).thenReturn(true);
+
+        assertThatThrownBy(() -> authService.changePassword(request))
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining("demostración");
+
+        verify(userRepository, never()).save(any());
     }
 
     @Test
