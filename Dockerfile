@@ -32,9 +32,10 @@ EXPOSE 8080
 # - TieredStopAtLevel=1: JIT with the fast C1 compiler only - noticeably
 #   quicker startup, negligible difference at this traffic level;
 # - SerialGC: the lightest collector, ideal for a single small container;
-# - MaxRAMPercentage: let the heap use 75% of the container's memory
-#   instead of the JVM's conservative 25% default.
+# - Xmx320m: a fixed heap cap. Railway containers report several GB of RAM,
+#   so a percentage-based limit let the heap grow far beyond what this app
+#   needs - and every MB held while awake is billed.
 # A JAVA_OPTS variable set in Railway overrides all of these.
-ENV JAVA_OPTS="-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -XX:MaxRAMPercentage=75"
+ENV JAVA_OPTS="-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xmx320m"
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
