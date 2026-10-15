@@ -10,7 +10,6 @@ import com.bookmania.bookmania.Exception.BusinessException;
 import com.bookmania.bookmania.Exception.ResourceNotFoundException;
 import com.bookmania.bookmania.Repository.UserRepository;
 import com.bookmania.bookmania.Security.CurrentUserService;
-import com.bookmania.bookmania.Security.DemoAccounts;
 import com.bookmania.bookmania.Security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,7 +29,6 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
     private final CurrentUserService currentUserService;
-    private final DemoAccounts demoAccounts;
 
     public AuthResponse register(RegisterRequest request) {
 
@@ -85,11 +83,6 @@ public class AuthService {
     public void changePassword(ChangePasswordRequest request) {
         User user = currentUserService.getCurrentUser();
 
-        // Demo credentials are shown on the login screen - letting a visitor
-        // change them would lock every other visitor out of the demo.
-        if (demoAccounts.isDemo(user.getEmail())) {
-            throw new BusinessException("Las cuentas de demostración no pueden cambiar la contraseña");
-        }
         if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
             throw new BusinessException("La contraseña actual no es correcta");
         }

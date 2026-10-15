@@ -50,8 +50,8 @@ public class GlobalExceptionHandler {
     }
 
     // Thrown by the services when someone acts on another user's loan or
-    // reservation, and by the demo read-only guard. Without this it fell
-    // through to the generic handler below and came back as a 500.
+    // reservation. Without this it fell through to the generic handler
+    // below and came back as a 500.
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<Map<String, Object>> handleForbidden(ForbiddenException ex) {
         return buildResponse(HttpStatus.FORBIDDEN, ex.getMessage());
