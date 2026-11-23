@@ -1,11 +1,11 @@
 -- =====================================================================
 -- BookMania - datos de demostración
 -- =====================================================================
--- 4 categorías, 37 libros en castellano (Brandon Sanderson, Harry Potter,
--- Sarah J. Maas, Canción de hielo y fuego, Joe Abercrombie) con portada de
--- Apple Books, 6 lectores ficticios, préstamos (activos, vencido, con
--- prórrogas, devueltos), reservas (pendientes, cumplida, cancelada,
--- caducada) y multas.
+-- 8 categorías, 51 libros en castellano (Brandon Sanderson, Harry Potter,
+-- Sarah J. Maas, Canción de hielo y fuego, Joe Abercrombie y los demás libros
+-- de la demo del navegador) con portada, 6 lectores ficticios, préstamos
+-- (activos, vencido, con prórrogas, devueltos), reservas (pendientes,
+-- cumplida, cancelada, caducada) y multas.
 --
 -- Uso: SOLO sobre una base vacía, después de que el backend haya arrancado
 -- una vez (Hibernate crea las tablas). Ejecutar en una sola transacción:
@@ -155,6 +155,31 @@ INSERT INTO fines (id, loan_id, user_id, days_overdue, penalty_days, penalty_unt
   (1, 5, 2, 1, 31, CURRENT_DATE + 23, (CURRENT_DATE - 8)::timestamp + time '10:30'),
   (2, 6, 2, 9, 39, CURRENT_DATE - 21, (CURRENT_DATE - 60)::timestamp + time '10:30'),
   (3, 12, 5, 5, 35, CURRENT_DATE - 39, (CURRENT_DATE - 74)::timestamp + time '10:30');
+-- Libros que también ofrece la demo del navegador (src/api/mock/db.js del
+-- frontend), con edición en castellano y portada de Apple Books o, si no
+-- hay, de Open Library. Sin préstamos: todas las copias disponibles.
+INSERT INTO categories (id, name, description) VALUES
+  (5, 'Ciencia ficción', 'Futuros posibles, espacio y tecnología.'),
+  (6, 'Clásicos', 'Libros que han resistido el paso del tiempo.'),
+  (7, 'Novela', 'Narrativa contemporánea y literaria.'),
+  (8, 'Ensayo', 'No ficción: historia, ciencia y pensamiento.');
+INSERT INTO books (id, title, author, isbn, pages, publish_year, cover_url, total_copies, available_copies, created_at) VALUES
+  (38, 'Amanecer rojo', 'Pierce Brown', '9788490069677', 512, 2014, 'https://is1-ssl.mzstatic.com/image/thumb/Publication126/v4/be/52/10/be5210a0-5cf4-889f-27c1-a2082eec797b/9788490069677.jpg/600x600bb.jpg', 5, 5, (CURRENT_DATE - 60)::timestamp + time '10:30'),
+  (39, 'El nombre del viento', 'Patrick Rothfuss', '9788401352799', 880, 2007, 'https://is1-ssl.mzstatic.com/image/thumb/Publication116/v4/2c/76/78/2c7678e8-6ef3-750d-610d-77df3ee77a80/9788401352799.jpg/600x600bb.jpg', 1, 1, (CURRENT_DATE - 59)::timestamp + time '10:30'),
+  (40, 'El temor de un hombre sabio', 'Patrick Rothfuss', '9788401352836', 1200, 2011, 'https://is1-ssl.mzstatic.com/image/thumb/Publication126/v4/3f/5e/78/3f5e7872-ea96-8f39-0914-048bc37ae1ba/9788401352836.jpg/600x600bb.jpg', 2, 2, (CURRENT_DATE - 58)::timestamp + time '10:30'),
+  (41, 'Dune', 'Frank Herbert', '9788466342667', 784, 1965, 'https://is1-ssl.mzstatic.com/image/thumb/Publication116/v4/b6/eb/75/b6eb75f8-7bc6-b732-9a35-87abcc37f183/9788466342667.jpg/600x600bb.jpg', 2, 2, (CURRENT_DATE - 57)::timestamp + time '10:30'),
+  (42, '1984', 'George Orwell', '9788423343362', 352, 1949, 'https://is1-ssl.mzstatic.com/image/thumb/Publication126/v4/cd/73/b5/cd73b539-9069-b02a-2367-7934ba9fdb7a/9788423343362.jpg/600x600bb.jpg', 3, 3, (CURRENT_DATE - 56)::timestamp + time '10:30'),
+  (43, 'Fahrenheit 451', 'Ray Bradbury', '9788445000977', 176, 1953, 'https://is1-ssl.mzstatic.com/image/thumb/Publication221/v4/19/2c/a9/192ca9b5-496a-fc12-84fb-5187cfeb99a0/9788445000977.jpg/600x600bb.jpg', 2, 2, (CURRENT_DATE - 55)::timestamp + time '10:30'),
+  (44, 'El problema de los tres cuerpos', 'Liu Cixin', '9788490695289', 416, 2008, 'https://is1-ssl.mzstatic.com/image/thumb/Publication116/v4/b4/32/c1/b432c154-6071-b712-849a-4534f09f584f/9788490695289.jpg/600x600bb.jpg', 2, 2, (CURRENT_DATE - 54)::timestamp + time '10:30'),
+  (45, 'El Hobbit', 'J. R. R. Tolkien', '9788445013946', 320, 1937, 'https://covers.openlibrary.org/b/isbn/9788445013946-L.jpg', 3, 3, (CURRENT_DATE - 53)::timestamp + time '10:30'),
+  (46, 'Los juegos del hambre', 'Suzanne Collins', '9788427200203', 400, 2008, 'https://is1-ssl.mzstatic.com/image/thumb/Publication122/v4/b5/4c/33/b54c334c-7415-4fc6-b116-5c5418811737/9788427200203.jpg/600x600bb.jpg', 3, 3, (CURRENT_DATE - 52)::timestamp + time '10:30'),
+  (47, 'El principito', 'Antoine de Saint-Exupéry', '9788498381498', 96, 1943, 'https://covers.openlibrary.org/b/isbn/9788498381498-L.jpg', 2, 2, (CURRENT_DATE - 51)::timestamp + time '10:30'),
+  (48, 'Cien años de soledad', 'Gabriel García Márquez', '9788439731764', 496, 1967, 'https://is1-ssl.mzstatic.com/image/thumb/Publication211/v4/98/9d/25/989d2556-68fc-03d4-d686-c97df9f70648/9788439731764.jpg/600x600bb.jpg', 3, 3, (CURRENT_DATE - 50)::timestamp + time '10:30'),
+  (49, 'Rayuela', 'Julio Cortázar', '9788420437989', 736, 1963, 'https://is1-ssl.mzstatic.com/image/thumb/Publication126/v4/ed/50/88/ed5088ec-02ab-145c-c2e0-d15c762bf195/9788420437989.jpg/600x600bb.jpg', 1, 1, (CURRENT_DATE - 49)::timestamp + time '10:30'),
+  (50, 'La sombra del viento', 'Carlos Ruiz Zafón', '9788408095590', 576, 2001, 'https://is1-ssl.mzstatic.com/image/thumb/Publication221/v4/ff/c5/1a/ffc51a56-2c0d-aa3e-9c1a-5c6adaa36d5b/9788408095590.jpg/600x600bb.jpg', 2, 2, (CURRENT_DATE - 48)::timestamp + time '10:30'),
+  (51, 'Sapiens. De animales a dioses', 'Yuval Noah Harari', '9788499924748', 496, 2011, 'https://is1-ssl.mzstatic.com/image/thumb/Publication116/v4/ae/bc/79/aebc793f-d82f-7f36-6055-fb554d6af50c/9788499924748.jpg/600x600bb.jpg', 2, 2, (CURRENT_DATE - 47)::timestamp + time '10:30');
+INSERT INTO book_categories (book_id, category_id) VALUES
+  (38, 5), (39, 1), (40, 1), (41, 5), (41, 6), (42, 5), (42, 6), (43, 5), (43, 6), (44, 5), (45, 1), (45, 6), (46, 3), (46, 5), (47, 6), (48, 6), (48, 7), (49, 7), (50, 7), (51, 8);
 SELECT setval(pg_get_serial_sequence('categories', 'id'), (SELECT max(id) FROM categories));
 SELECT setval(pg_get_serial_sequence('books', 'id'), (SELECT max(id) FROM books));
 SELECT setval(pg_get_serial_sequence('users', 'id'), (SELECT max(id) FROM users));
