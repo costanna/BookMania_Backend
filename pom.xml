@@ -30,7 +30,7 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Actuator (health endpoint for Railway's healthcheck) -->
+        <!-- Actuator (health endpoint for Render's health check) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
