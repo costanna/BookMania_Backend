@@ -161,8 +161,7 @@ Solo cuando el frontend de Vercel cargue los datos desde Render y el login funci
 1. En Railway, proyecto **BookMania**: elimina los servicios `BookMania_Backend`,
    `BookMania_Frontend` y `Postgres` (o el proyecto entero). Mientras sigan conectados a GitHub,
    cada push a `main` los vuelve a construir y gasta crédito.
-2. En este repo, borra la carpeta `.railway/` (IaC de Railway, ya no se usa) en una rama nueva.
-3. Borra o guarda en un sitio seguro `bookmania.dump`.
+2. Borra o guarda en un sitio seguro `bookmania.dump`.
 
 ---
 
