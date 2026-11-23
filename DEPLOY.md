@@ -14,7 +14,7 @@ en el panel una vez y Render no los pisa nunca.
 La base de datos **no** está en el Blueprint a propósito: el Postgres gratuito de Render caduca a
 los 30 días. Neon escala a cero y no caduca.
 
-Orden: **1. Neon → 2. datos desde Railway → 3. Render → 4. Vercel → 5. CORS → 6. apagar Railway.**
+Orden: **1. Neon → 2. datos (opcional) → 3. Render → 4. Vercel → 5. CORS → 6. primer admin → 7. apagar Railway.**
 
 ---
 
@@ -39,10 +39,16 @@ Orden: **1. Neon → 2. datos desde Railway → 3. Render → 4. Vercel → 5. C
 > ¿Por qué la conexión directa? La app tiene un único proceso con su propio pool (HikariCP); el
 > pooler de Neon (PgBouncer en modo transacción) no aporta nada aquí.
 
-## 2. Pasar los datos de Railway a Neon
+## 2. Datos (opcional)
 
-Los libros, usuarios y préstamos solo existen en el Postgres de Railway. Cópialos **antes** del
-primer arranque en Render, para que Hibernate encuentre las tablas ya creadas.
+**Empezar con la base vacía** es lo más sencillo: no hay que hacer nada. Hibernate crea las tablas
+en Neon en el primer arranque (`JPA_DDL_AUTO=update`). Después hay que crear el primer
+administrador (paso 6) y dar de alta categorías y libros desde el panel de administración.
+
+**Copiar datos de una base existente** (p. ej. el antiguo Postgres de Railway) solo es posible si
+esa base está encendida y accesible desde fuera (en Railway: *TCP Proxy* activado, que crea la
+variable `DATABASE_PUBLIC_URL`). En ese caso, cópialos **antes** del primer arranque en Render,
+para que Hibernate encuentre las tablas ya creadas.
 
 Ejecuta esto en PowerShell **desde una carpeta fuera de los repos** (el volcado contiene datos
 de usuarios y no debe acabar en git). Usa Docker para no tener que instalar el cliente de Postgres:
@@ -98,7 +104,7 @@ Comprobación (PowerShell):
 curl.exe https://bookmania-backend.onrender.com/actuator/health
 # {"status":"UP"}
 curl.exe "https://bookmania-backend.onrender.com/api/books?page=0&size=1"
-# JSON con el primer libro → la conexión con Neon funciona
+# JSON (con "content": [] si la base está vacía) → la conexión con Neon funciona
 ```
 
 ### Cosas que conviene saber
@@ -135,7 +141,20 @@ https://bookmania.vercel.app
 Guardar redespliega el servicio. Las URLs de preview de Vercel no están permitidas (y no hace
 falta).
 
-## 6. Apagar Railway
+## 6. Crear el primer administrador
+
+El registro público siempre crea usuarios con rol `USER`. Para tener un admin:
+
+1. Regístrate desde la web de Vercel con el email que quieras usar como administradora.
+2. En Neon → proyecto `bookmania` → **SQL Editor**:
+
+   ```sql
+   UPDATE users SET role = 'ADMIN' WHERE email = 'tu-email@ejemplo.com';
+   ```
+
+3. Cierra sesión y vuelve a entrar (el rol va dentro del token JWT).
+
+## 7. Apagar Railway
 
 Solo cuando el frontend de Vercel cargue los datos desde Render y el login funcione:
 
@@ -155,5 +174,5 @@ Solo cuando el frontend de Vercel cargue los datos desde Render y el login funci
 | `password authentication failed` | Contraseña de Neon regenerada o mal pegada | Copia otra vez la cadena desde *Connect* en Neon y actualiza `DATABASE_URL` |
 | El navegador dice `blocked by CORS policy` | `CORS_ALLOWED_ORIGINS` no coincide exactamente con la URL del frontend | Mismo esquema (`https://`), sin barra final, sin espacios |
 | Login devuelve 500 / `WeakKeyException` | `JWT_SECRET_KEY` no es Base64 o es demasiado corta | Genera otra con `openssl rand -base64 48` |
-| Catálogo vacío | No se restauraron los datos en Neon | Repite el paso 2 con `--clean --if-exists` |
+| Catálogo vacío | Base nueva, o no se restauraron los datos | Normal si empezaste vacía: añade libros como admin. Si copiaste datos, repite el paso 2 con `--clean --if-exists` |
 | Neon no se duerme nunca | Algo consulta la BD periódicamente | En Neon mira si el compute pasa a *Idle*. Busca pingers externos y comprueba que el health check sigue sin tocar la BD |
