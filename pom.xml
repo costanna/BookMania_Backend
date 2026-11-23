@@ -133,6 +133,13 @@
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
                         </path>
+                        <!-- Generates metadata for @ConfigurationProperties (jwt.*), so the
+                             IDE recognises those keys in application.properties -->
+                        <path>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-configuration-processor</artifactId>
+                            <version>${project.parent.version}</version>
+                        </path>
                     </annotationProcessorPaths>
                     <compilerArgs>
                         <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>

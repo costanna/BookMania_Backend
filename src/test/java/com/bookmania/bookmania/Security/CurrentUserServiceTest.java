@@ -4,7 +4,6 @@ import com.bookmania.bookmania.Entity.User;
 import com.bookmania.bookmania.Exception.ResourceNotFoundException;
 import com.bookmania.bookmania.Repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
