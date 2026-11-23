@@ -1,0 +1,42 @@
+# Render Blueprint for the BookMania backend.
+#
+# Render reads this file when you create a Blueprint from this repo
+# (Dashboard -> New -> Blueprint) and keeps the service in sync with it on
+# every push to the linked branch.
+#
+# The database is NOT defined here: it lives in Neon (serverless Postgres
+# that scales to zero). Render's free Postgres expires after 30 days.
+#
+# Secrets are marked `sync: false`: Render asks for their values when the
+# Blueprint is created and never overwrites them afterwards.
+
+services:
+  - type: web
+    name: bookmania-backend
+    runtime: docker
+    plan: free # sleeps after 15 min without requests, wakes on the next one
+    region: frankfurt # same region as the Neon database (aws-eu-central-1)
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    # Must not touch the database (management.health.db.enabled=false):
+    # otherwise every health check would keep Neon awake.
+    healthCheckPath: /actuator/health
+    autoDeployTrigger: commit
+    envVars:
+      # Neon connection string, e.g.
+      # postgresql://user:pass@ep-xxx.eu-central-1.aws.neon.tech/neondb?sslmode=require
+      # DatabaseUrlEnvironmentPostProcessor turns it into the JDBC settings.
+      - key: DATABASE_URL
+        sync: false
+      # Base64 key (at least 32 bytes): openssl rand -base64 48
+      - key: JWT_SECRET_KEY
+        sync: false
+      # Exact frontend origin(s), comma-separated, no trailing slash,
+      # e.g. https://bookmania.vercel.app
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: JWT_EXPIRATION
+        value: "86400000" # 24 h
+      - key: JPA_DDL_AUTO
+        value: update

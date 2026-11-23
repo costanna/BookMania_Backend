@@ -152,31 +152,35 @@ The API will be available at `http://localhost:8080`
 
 ---
 
-## Deploying to Railway
+## Deploying to Render (Blueprint) + Neon
 
-The backend ships with a `Dockerfile` and `.railway/railway.ts` (Railway Infrastructure as
-Code, applied with `railway config apply` - not on git push), so Railway builds and runs it as a
-container — no extra buildpack configuration needed.
+The backend is deployed as a Docker web service on [Render](https://render.com), described by
+the **Blueprint** in [`render.yaml`](render.yaml). The database is
+[Neon](https://neon.tech) (serverless Postgres that scales to zero). The step-by-step guide,
+including moving the data over from Railway, is in [`DEPLOY.md`](DEPLOY.md).
 
-1. Push this repo to GitHub and create a new Railway project from it (or run `railway up` from
-   the CLI).
-2. Add a **PostgreSQL** plugin to the project.
-3. In the backend service's **Variables** tab, set:
+1. **Neon:** create a project in AWS Europe Central 1 (Frankfurt), set the compute to a fixed
+   0.25 CU with scale to zero on, and copy the **direct** connection string (host without
+   `-pooler`).
+2. **Render:** *New → Blueprint*, pick this repo. Render reads `render.yaml` and asks for the
+   secrets:
 
    | Variable | Value |
    |---|---|
-   | `SPRING_DATASOURCE_URL` | `jdbc:postgresql://${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}` |
-   | `SPRING_DATASOURCE_USERNAME` | `${{Postgres.PGUSER}}` |
-   | `SPRING_DATASOURCE_PASSWORD` | `${{Postgres.PGPASSWORD}}` |
-   | `JWT_SECRET_KEY` | a fresh, private Base64 secret (e.g. `openssl rand -base64 48`) — **do not reuse the dev default in `application.properties`** |
-   | `CORS_ALLOWED_ORIGINS` | your deployed frontend URL, e.g. `https://bookmania.up.railway.app` |
+   | `DATABASE_URL` | Neon's connection string, `postgresql://user:pass@ep-…neon.tech/neondb?sslmode=require` |
+   | `JWT_SECRET_KEY` | a fresh, private Base64 secret (`openssl rand -base64 48`) — **do not reuse the dev default in `application.properties`** |
+   | `CORS_ALLOWED_ORIGINS` | the frontend URL on Vercel, e.g. `https://bookmania.vercel.app` (no trailing slash) |
 
-   (`${{Postgres.PGHOST}}` etc. are Railway variable references to the Postgres plugin — pick
-   them from the autocomplete when adding a new variable.) Railway sets `PORT` automatically;
-   the app already listens on it via `server.port=${PORT:8080}`.
-4. Deploy. Railway builds the `Dockerfile` and polls `/actuator/health` (configured in
-   `.railway/railway.ts`) to know when the container is ready.
-5. Once it's up, update the frontend's `VITE_API_URL` to the Railway backend URL.
+   `DatabaseUrlEnvironmentPostProcessor` turns `DATABASE_URL` into the JDBC settings, and
+   Render sets `PORT`, which the app reads via `server.port=${PORT:8080}`.
+3. Render builds the `Dockerfile` and waits for `/actuator/health` before switching traffic.
+   That endpoint never queries the database, so Neon can go to sleep.
+4. Set the frontend's `VITE_API_URL` (in Vercel) to the Render URL, e.g.
+   `https://bookmania-backend.onrender.com`.
+
+On the free plan the service **sleeps after 15 minutes without requests** and the first
+request after that takes up to a minute while it wakes up. That's intentional: don't add pings,
+keep-alives or uptime monitors to keep it awake.
 
 ---
 
@@ -384,31 +388,35 @@ La API estará disponible en `http://localhost:8080`
 
 ---
 
-## Despliegue en Railway
+## Despliegue en Render (Blueprint) + Neon
 
-El backend incluye un `Dockerfile` y un `.railway/railway.ts` (Infrastructure as Code de
-Railway, se aplica con `railway config apply`, no al hacer push), así que Railway lo construye y ejecuta
-como contenedor sin configuración adicional de buildpack.
+El backend se despliega como servicio web Docker en [Render](https://render.com), descrito por
+el **Blueprint** de [`render.yaml`](render.yaml). La base de datos está en
+[Neon](https://neon.tech) (Postgres serverless que escala a cero). La guía paso a paso,
+incluido cómo pasar los datos desde Railway, está en [`DEPLOY.md`](DEPLOY.md).
 
-1. Sube este repo a GitHub y crea un proyecto nuevo en Railway a partir de él (o usa
-   `railway up` desde la CLI).
-2. Añade un plugin de **PostgreSQL** al proyecto.
-3. En la pestaña **Variables** del servicio del backend, configura:
+1. **Neon:** crea un proyecto en AWS Europe Central 1 (Frankfurt), deja el compute fijo en
+   0.25 CU con scale to zero activado y copia la cadena de conexión **directa** (host sin
+   `-pooler`).
+2. **Render:** *New → Blueprint* y elige este repo. Render lee `render.yaml` y pide los
+   secretos:
 
    | Variable | Valor |
    |---|---|
-   | `SPRING_DATASOURCE_URL` | `jdbc:postgresql://${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}` |
-   | `SPRING_DATASOURCE_USERNAME` | `${{Postgres.PGUSER}}` |
-   | `SPRING_DATASOURCE_PASSWORD` | `${{Postgres.PGPASSWORD}}` |
-   | `JWT_SECRET_KEY` | un secreto Base64 nuevo y privado (p. ej. `openssl rand -base64 48`) — **no reutilices el valor por defecto de desarrollo de `application.properties`** |
-   | `CORS_ALLOWED_ORIGINS` | la URL del frontend desplegado, p. ej. `https://bookmania.up.railway.app` |
+   | `DATABASE_URL` | la cadena de Neon, `postgresql://usuario:pass@ep-…neon.tech/neondb?sslmode=require` |
+   | `JWT_SECRET_KEY` | un secreto Base64 nuevo y privado (`openssl rand -base64 48`) — **no reutilices el valor por defecto de desarrollo de `application.properties`** |
+   | `CORS_ALLOWED_ORIGINS` | la URL del frontend en Vercel, p. ej. `https://bookmania.vercel.app` (sin barra final) |
 
-   (`${{Postgres.PGHOST}}`, etc. son referencias a variables del plugin de Postgres —
-   aparecen en el autocompletado al crear una variable nueva.) Railway define `PORT`
-   automáticamente; la app ya escucha en ese puerto vía `server.port=${PORT:8080}`.
-4. Despliega. Railway construye el `Dockerfile` y consulta `/actuator/health` (configurado en
-   `.railway/railway.ts`) para saber cuándo el contenedor está listo.
-5. Una vez arriba, actualiza `VITE_API_URL` en el frontend con la URL del backend en Railway.
+   `DatabaseUrlEnvironmentPostProcessor` convierte `DATABASE_URL` en la configuración JDBC, y
+   Render define `PORT`, que la app lee vía `server.port=${PORT:8080}`.
+3. Render construye el `Dockerfile` y espera a que `/actuator/health` responda antes de
+   pasarle tráfico. Ese endpoint no consulta la base de datos, así Neon puede dormirse.
+4. Configura `VITE_API_URL` del frontend (en Vercel) con la URL de Render, p. ej.
+   `https://bookmania-backend.onrender.com`.
+
+En el plan gratuito el servicio **se duerme tras 15 minutos sin peticiones** y la primera
+petición después tarda hasta un minuto en despertarlo. Es intencionado: no añadas pings,
+keep-alives ni monitores de uptime para mantenerlo despierto.
 
 ---
 

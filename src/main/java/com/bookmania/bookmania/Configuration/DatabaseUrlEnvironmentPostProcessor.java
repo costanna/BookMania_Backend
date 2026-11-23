@@ -12,11 +12,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Lets the app be wired up with Railway's single-variable Postgres connection
- * pattern: set one env var (any name) to {@code ${{ Postgres.DATABASE_URL }}}.
+ * Lets the app be wired up with a single DATABASE_URL variable, the way Neon
+ * (and most hosted Postgres providers) hand out their connection string.
  *
- * Railway's DATABASE_URL looks like
- * {@code postgresql://user:password@host:port/database}, but Spring's JDBC
+ * That string looks like
+ * {@code postgresql://user:password@host:port/database?sslmode=require}, but Spring's JDBC
  * datasource needs a {@code jdbc:postgresql://host:port/database} URL plus
  * username/password as separate properties. This runs before the context is
  * refreshed and translates one into the other.
@@ -24,7 +24,7 @@ import java.util.Map;
  * Only kicks in when a DATABASE_URL property is actually present, so local
  * dev keeps using the SPRING_DATASOURCE_* properties/defaults in
  * application.properties untouched, and it takes precedence over them when
- * both are set — matching "just point Railway at DATABASE_URL" as the
+ * both are set — matching "just paste Neon's URL into DATABASE_URL" as the
  * simplest path to a working deploy.
  */
 public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProcessor {
@@ -64,7 +64,7 @@ public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProce
                 props.put("spring.datasource.password", password);
             }
 
-            environment.getPropertySources().addFirst(new MapPropertySource("railwayDatabaseUrl", props));
+            environment.getPropertySources().addFirst(new MapPropertySource("databaseUrl", props));
         } catch (Exception e) {
             // Malformed DATABASE_URL: fall back to whatever SPRING_DATASOURCE_*
             // properties/defaults are configured, and let the datasource

@@ -51,7 +51,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/books/**").permitAll()
-                .requestMatchers("/actuator/health").permitAll() // Railway's deploy healthcheck hits this
+                .requestMatchers("/actuator/health").permitAll() // Render's health check (render.yaml) hits this
                 .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -69,7 +69,7 @@ public class SecurityConfig {
 
         // Driven by app.cors.allowed-origins (CORS_ALLOWED_ORIGINS env var), a
         // comma-separated list. Defaults to the local dev origins; set it to the
-        // deployed frontend URL in Railway's Variables tab.
+        // deployed frontend URL in Render's Environment tab.
         config.setAllowedOrigins(allowedOrigins);
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
